@@ -1,3 +1,6 @@
+import random
+from util import Queue
+
 class User:
     def __init__(self, name):
         self.name = name
@@ -45,8 +48,14 @@ class SocialGraph:
         # !!!! IMPLEMENT ME
 
         # Add users
+        for u in range(num_users):
+            self.add_user(u)
 
         # Create friendships
+        for user in self.users:
+            friend_amount = random.randint(1, 4)
+            for i in range(friend_amount):
+                self.add_friendship(user, random.randint(1, len(self.users)))
 
     def get_all_social_paths(self, user_id):
         """
@@ -57,14 +66,39 @@ class SocialGraph:
 
         The key is the friend's ID and the value is the path.
         """
-        visited = {}  # Note that this is a dictionary, not a set
-        # !!!! IMPLEMENT ME
+        q = Queue()
+        q.enqueue(user_id)
+        visited = {}
+        while q.size() > 0:
+            current_user = q.dequeue()
+            for friend in self.friendships[current_user]:
+                # print(f"my friends: {friend}")
+                if current_user not in visited and friend not in visited:
+                    visited[current_user] = [x for x in self.friendships.get(current_user)
+                                            if x != current_user]
+                    q.enqueue(friend)
+                
+            # print(f"cache: {visited}")
         return visited
 
 
 if __name__ == '__main__':
     sg = SocialGraph()
     sg.populate_graph(10, 2)
-    print(sg.friendships)
+    # print(sg.friendships)
     connections = sg.get_all_social_paths(1)
     print(connections)
+
+
+
+
+#To create 100 users with an average of 10 friends each, how many times would you need to call add_friendship()? Why?
+    # you would have to call add_friendships() * n times. 
+    # The function checks if user exist and if friend is already friend.
+    # then just adds friend in O(1)
+
+#If you create 1000 users with an average of 5 random friends each,
+# what percentage of other users will be in a particular user's extended social network? 
+
+
+# What is the average degree of separation between a user and those in his/her extended network?
