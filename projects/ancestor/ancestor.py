@@ -16,7 +16,6 @@ def earliest_ancestor(ancestors, starting_node):
     print(cache)
     has_parent = True
     temp = cache[starting_node]
-    temp2 = None
     while has_parent:
         if cache.get(temp) is not None:
             temp = cache.get(temp)
