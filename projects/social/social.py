@@ -1,5 +1,6 @@
 import random
 from util import Queue
+from graph import Graph
 
 class User:
     def __init__(self, name):
@@ -65,20 +66,21 @@ class SocialGraph:
         extended network with the shortest friendship path between them.
 
         The key is the friend's ID and the value is the path.
+        {1: [1], 8: [1, 8], 10: [1, 10], 5: [1, 5], 2: [1, 10, 2], 6: [1, 10, 6], 7: [1, 10, 2, 7]}
         """
+        visited = {}
+        visited[user_id] = [user_id]
         q = Queue()
         q.enqueue(user_id)
-        visited = {}
         while q.size() > 0:
-            current_user = q.dequeue()
-            for friend in self.friendships[current_user]:
-                # print(f"my friends: {friend}")
-                if current_user not in visited and friend not in visited:
-                    visited[current_user] = [x for x in self.friendships.get(current_user)
-                                            if x != current_user]
+            current = q.dequeue()
+            friends = self.friendships[current]
+            for friend in friends:
+                if friend not in visited:
                     q.enqueue(friend)
-                
-            # print(f"cache: {visited}")
+                    path = list(visited[current])
+                    path.append(friend)
+                    visited[friend] = path
         return visited
 
 
