@@ -1,6 +1,5 @@
 import random
 from util import Queue
-from graph import Graph
 
 class User:
     def __init__(self, name):
