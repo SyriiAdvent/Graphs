@@ -31,47 +31,106 @@ world.print_rooms()
 
 player = Player(world.starting_room)
 
+visited = {}
+visited[player.current_room.id] = True
+
 # Fill this out with directions to walk
-# traversal_path = ['n', 'n']-
-# traversal_path = []
-traversal_path = player.current_room.get_exits()
+# traversal_path = ['n', 'n']
+traversal_path = []
+v_rooms = []
 
-def bft(room=world.starting_room):
+def traverse_map():
+    found_exit = True
+    while found_exit:
+        found_exit = False
+        exits = player.current_room.get_exits()
+        current = player.current_room
+        p_rooms = []
+        for direction in exits:
+            if current.get_room_in_direction(direction).id not in visited:
+                p_rooms.append((current.get_room_in_direction(direction), direction))
+        if len(p_rooms) > 0:
+            room_to_traverse = p_rooms[0]
+            for i in range(len(p_rooms)):
+                if len(p_rooms[i][0].get_exits()) < 2:
+                    room_to_traverse = p_rooms[i]
+                    break
+                if p_rooms[i][1] is 'w':
+                    room_to_traverse = p_rooms[i]
+                    break
+                elif p_rooms[i][1] is 's':
+                    room_to_traverse = p_rooms[i]
+            for room in p_rooms:
+                if room != room_to_traverse:
+                    v_rooms.append(room[0].id)
+            room, direction = room_to_traverse
+            player.travel(direction)
+            traversal_path.append(direction)
+            visited[room.id] = True
+            found_exit = True
+
+def find_shortest_path(destination):
+    visited_room = set()
     q = Queue()
-    visited_rooms = {}
-    q.enqueue(room)
-    while q.size() > 0:
-        v = q.dequeue()
-        v_rooms = v.get_exits()
-        if v.id not in visited_rooms:
-            visited_rooms.add(v.id)
-            visited_rooms.update
-            print(visited_rooms[0])
-        if len(v.get_exits()) > 0:
-            for door in v.get_exits():
-                # visited_rooms[v.id] = 
-                q.enqueue(v.get_room_in_direction(door))
-    return visited_rooms
+    q2 = Queue()
+    q.enqueue([])
+    q2.enqueue(player.current_room)
 
-visited_rooms_bft = bft()
-print(visited_rooms_bft)
+    while q.size() > 0:
+        path = q.dequeue()
+        current = q2.dequeue()
+        if current.id not in visited_room:
+            visited_room.add(current.id)
+            if current.id == destination:
+                return path
+            exits = current.get_exits()
+            for direction in exits:
+                path_copy = list(path)
+                path_copy.append(direction)
+                q.enqueue(path_copy)
+                q2.enqueue(current.get_room_in_direction(direction))
+    return None
+
+def find_unexplored(path):
+    for direction in path:
+        player.travel(direction)
+        traversal_path.append(direction)
+    visited[player.current_room.id] = True
+
+while len(world.rooms) > len(visited):
+    traverse_map()
+    if len(visited) != len(world.rooms):
+        paths = []
+        for unvisited in v_rooms:
+            paths.append(find_shortest_path(unvisited))
+        shortest_path = None
+        first_iter = True
+        for path in paths:
+            if first_iter:
+                shortest_path = path
+                first_iter = False
+                continue
+            if len(path) <= len(shortest_path):
+                shortest_path = path
+        find_unexplored(shortest_path)
+        v_rooms.remove(player.current_room.id)
+
+
 
 # TRAVERSAL TEST
-# visited_rooms = set()
-# player.current_room = world.starting_room
-# visited_rooms.add(player.current_room)
+visited_rooms = set()
+player.current_room = world.starting_room
+visited_rooms.add(player.current_room)
 
-# for move in traversal_path:
-#     player.travel(move)
-#     visited_rooms.add(player.current_room)
+for move in traversal_path:
+    player.travel(move)
+    visited_rooms.add(player.current_room)
 
-# if len(visited_rooms) == len(room_graph):
-#     print(f"TESTS PASSED: {len(traversal_path)} moves, {len(visited_rooms)} rooms visited")
-# else:
-#     print("TESTS FAILED: INCOMPLETE TRAVERSAL")
-#     print(f"{len(room_graph) - len(visited_rooms)} unvisited rooms")
-
-
+if len(visited_rooms) == len(room_graph):
+    print(f"TESTS PASSED: {len(traversal_path)} moves, {len(visited_rooms)} rooms visited")
+else:
+    print("TESTS FAILED: INCOMPLETE TRAVERSAL")
+    print(f"{len(room_graph) - len(visited_rooms)} unvisited rooms")
 
 #######
 # UNCOMMENT TO WALK AROUND
